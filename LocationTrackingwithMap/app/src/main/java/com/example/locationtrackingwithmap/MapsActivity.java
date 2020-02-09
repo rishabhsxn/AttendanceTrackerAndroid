@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,6 +60,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     boolean isCalledFromOnCreate = false;
     boolean isAlertVisible = false;
+
+    LatLng currentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +106,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+
+    public void currentLocation(View view){
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, MAP_ZOOM_OFFSET));
+        Toast.makeText(getApplicationContext(), "Current Location", Toast.LENGTH_LONG).show();
+    }
+
+
     public void locationHandlingSetup(){
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -131,6 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.i("LONGITUDE", lon);
 
                         // TODO (DONE): update marker on MAP
+                        currentLocation = userLocation;
                         addCircleToMap(userLocation, yourLocation);
                     }
                 }
@@ -195,6 +206,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.i("LAST_LOCATION", "Lat: "+lat+" Lon: "+lon);
 
                             // TODO (DONE): Set location on MAP
+                            currentLocation = lastLocation;
                             addCircleToMap(lastLocation, yourLastLocation);
                         }
                     }
