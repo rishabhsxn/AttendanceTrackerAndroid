@@ -52,7 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GeofencingClient geofencingClient;
     private GoogleMap mMap;
     private static final int REQUEST_CODE_BACKGROUND = 200;
-    private static final int LOITERING_TIME = 900000;//Dwell interval = 15mins
+    private static final int LOITERING_TIME = 60*1000;//Dwell interval = 1mins
     private static final int DURATION = 60 * 60 * 1000;//geofence existing interval = 1hour
     private static final float RADIUS = 40.0f;//radius for geofence
     private static final String GEOFENCE_REQ_ID = "My Geofence";
@@ -62,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker geoFenceMarker;
 
     final int LOCATION_REQUEST_CODE = 1000;
-    final int SET_TIME_INTERVAL = 20 * 1000;
+    final int SET_TIME_INTERVAL = 5 * 1000;
     private FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
@@ -142,7 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .setCircularRegion(manipalLib.latitude, manipalLib.longitude, RADIUS) // defining fence region
                             .setExpirationDuration(DURATION) // expiring date
                             // Transition types that it should look for
-                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
+                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                             .setLoiteringDelay(LOITERING_TIME)
                             .build()
             );
