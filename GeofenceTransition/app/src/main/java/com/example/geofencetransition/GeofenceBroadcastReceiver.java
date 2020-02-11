@@ -45,20 +45,26 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         switch(geofenceTransition){
             case Geofence.GEOFENCE_TRANSITION_ENTER:
                 Toast.makeText(context,"User entered Geofence",Toast.LENGTH_LONG).show();
+               MapsActivity.drawGeofence("yellow");
                 break;
             case Geofence.GEOFENCE_TRANSITION_DWELL:
                 Toast.makeText(context,"User inside Geofence",Toast.LENGTH_LONG).show();
+                MapsActivity.drawGeofence("green");
                 break;
             case Geofence.GEOFENCE_TRANSITION_EXIT:
                 Toast.makeText(context,"User Exited Geofence",Toast.LENGTH_LONG).show();
+                MapsActivity.drawGeofence("red");
                 break;
 
-            default:Log.i(TAG,"ERROR OCCURRED");
+            default:
+                Log.i(TAG,"ERROR OCCURRED");
+                MapsActivity.drawGeofence("red");
 
-            //TODO: default red ,enter yellow, dwell green,exit red
+            //TODO: default red ,enter yellow , dwell green ,exit red
 
 
         }
+
 
         // Test that the reported transition was of interest.
 //        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL ||geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT ) {
@@ -81,6 +87,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 //            Log.i(TAG,"ERROR OCCURRED");
 //        }
     }
+
 
     /**
      * Gets transition details and returns them as a formatted string.

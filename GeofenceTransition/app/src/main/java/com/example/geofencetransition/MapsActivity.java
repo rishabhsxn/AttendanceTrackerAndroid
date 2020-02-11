@@ -49,17 +49,25 @@ import java.util.ArrayList;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    public static CircleOptions circleOptions;
     private GeofencingClient geofencingClient;
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
+//    private static int color;
     private static final int REQUEST_CODE_BACKGROUND = 200;
     private static final int LOITERING_TIME = 60*1000;//Dwell interval = 1mins
     private static final int DURATION = 60 * 60 * 1000;//geofence existing interval = 1hour
-    private static final float RADIUS = 40.0f;//radius for geofence
+    private static final float RADIUS = 20.0f;//radius for geofence
     private static final String GEOFENCE_REQ_ID = "My Geofence";
     private static final LatLng manipalLib = new LatLng(26.8415517, 75.565365);
     private PendingIntent geofencePendingIntent;
     ArrayList<Geofence> geofenceArrayList = new ArrayList<>();
-    private Marker geoFenceMarker;
+    private static Marker geoFenceMarker;
+    private static ArrayList<Marker> getGeoFenceMarkers;
+
+    private static Circle geoFenceLimits;
+    private static int red = 255;
+    private static int blue = 180;
+    private static int green = 180;
 
     final int LOCATION_REQUEST_CODE = 1000;
     final int SET_TIME_INTERVAL = 5 * 1000;
@@ -277,7 +285,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // ...
                             Log.i(TAG, "Successful to ADD");
                             markerForGeofence(manipalLib);
-                            drawGeofence();
+                            drawGeofence("red");
                         }
                     })
                     .addOnFailureListener(this, new OnFailureListener() {
@@ -293,20 +301,88 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Draw Geofence circle on GoogleMap
-        private Circle geoFenceLimits;
-        private void drawGeofence () {
+
+        public static void drawGeofence (String option) {
             Log.d("Inside func", "drawGeofence()");
 
-            if (geoFenceLimits != null)
-                geoFenceLimits.remove();
 
-            CircleOptions circleOptions = new CircleOptions()
-                    .center(geoFenceMarker.getPosition())
-                    .strokeColor(Color.argb(50, 0, 0, 255))
-                    .fillColor(Color.argb(100, 204, 204, 255))
-                    .radius(RADIUS);
-            geoFenceLimits = mMap.addCircle(circleOptions);
+//                int color;
+                if (geoFenceLimits != null)
+                    geoFenceLimits.remove();
+
+                switch (option){
+                    case "red":
+//                    color = R.color.red;
+                        red= 255;
+                        green= 51;
+                        blue= 51;
+                        break;
+                    case "yellow":
+                      //  color = R.color.yellow;
+                        red= 255;
+                        green= 209;
+                        blue= 26;
+                        break;
+                    case "green":
+//                    color = R.color.green;
+                        red= 0;
+                        green= 230;
+                        blue= 0;
+                        break;
+                    default:
+//                    color = Color.RED;
+                        red= 255;
+                        green= 80;
+                        blue= 80;
+                }
+
+                circleOptions = new CircleOptions().center(geoFenceMarker.getPosition())
+//                    .strokeColor(color)
+//                    .strokeColor(Color.alpha(40))
+//                    .fillColor(color)
+//                    .fillColor(Color.alpha(80))
+                        .strokeColor(Color.argb(40, red, green, blue))
+                        .fillColor(Color.argb(80, red, green, blue))
+                        .radius(RADIUS);
+
+                geoFenceLimits = mMap.addCircle(circleOptions);
+
+
+
+
+            //                    .strokeColor(Color.argb(40, 0, 0, 0))
+//                    .fillColor(Color.argb(80, red, green, blue))
+
         }
+//Method to be called outside of mainActivity to change the color of the field inside geofences
+//   public static void setColor(String option){
+//           switch (option){
+//               case "red":
+//                   red = 255;
+//                   green = 99;
+//                   blue = 71;
+//                   break;
+//               case "yellow":
+//                   red = 255;
+//                   green = 255;
+//                   blue = 102;
+//                   break;
+//               case "green":
+//                   red = 0;
+//                   green = 255;
+//                   blue = 127;
+//                   break;
+//                default:
+//                    red = 255;
+//                    blue = 180;
+//                    green = 180;
+//           }
+//       circleOptions.fillColor(Color.argb(80, red, green, blue));
+//       geoFenceLimits = mMap.addCircle(circleOptions);
+//
+//   }
+
+
 
         /**
          * Manipulates the map once available.
@@ -329,11 +405,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .title("Geofence Centre static -Library");
             if (mMap != null) {
                 // Remove last geoFenceMarker
-                if (geoFenceMarker != null)
-                    geoFenceMarker.remove();
 
-                geoFenceMarker = mMap.addMarker(markerOptions);
-                geoFenceMarker.setVisible(false);
+                    if (geoFenceMarker != null)
+                        geoFenceMarker.remove();
+
+                    geoFenceMarker = mMap.addMarker(markerOptions);
+                    geoFenceMarker.setVisible(false);
+
             }
         }
 
