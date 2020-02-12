@@ -42,7 +42,7 @@
             </intent-filter>
         </activity>
         <receiver android:name=".GeofenceBroadcastReceiver"
-            android:exported="false">
+            android:exported="true">
             <intent-filter >
                 <action android:name="com.example.geofencetransition.GeofenceBroadcastReceiver.ACTION_RECEIVE_GEOFENCE"/>
             </intent-filter>
