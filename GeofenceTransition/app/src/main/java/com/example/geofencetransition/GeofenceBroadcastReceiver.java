@@ -1,20 +1,15 @@
 package com.example.geofencetransition;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.os.Build;
+
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
+
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
@@ -24,11 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
-
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = GeofenceBroadcastReceiver.class.getSimpleName();
+    static final String ACTION_RECEIVE_GEOFENCE = "com.example.geofencetransition.action.RECEIVE_GEOFENCE";
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG,"OnReceive Called");
@@ -41,24 +34,26 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         }
         // Get the transition type.
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
-
+        Log.i("TRIGGERED GEOFENCE ", geofencingEvent.getTriggeringGeofences().toString());
+        String id = geofencingEvent.getTriggeringGeofences().get(0).getRequestId();
         switch(geofenceTransition){
             case Geofence.GEOFENCE_TRANSITION_ENTER:
-                Toast.makeText(context,"User entered Geofence",Toast.LENGTH_LONG).show();
-               MapsActivity.drawGeofence("yellow");
+                Toast.makeText(context,"User entered Geofence ".concat(id),Toast.LENGTH_LONG).show();
+               MapsActivity.drawGeofence("yellow",id);
                 break;
             case Geofence.GEOFENCE_TRANSITION_DWELL:
-                Toast.makeText(context,"User inside Geofence",Toast.LENGTH_LONG).show();
-                MapsActivity.drawGeofence("green");
+                Toast.makeText(context,"User inside Geofence ".concat(id),Toast.LENGTH_LONG).show();
+                MapsActivity.drawGeofence("green",id);
                 break;
             case Geofence.GEOFENCE_TRANSITION_EXIT:
-                Toast.makeText(context,"User Exited Geofence",Toast.LENGTH_LONG).show();
-                MapsActivity.drawGeofence("red");
+                Toast.makeText(context,"User Exited Geofence ".concat(id),Toast.LENGTH_LONG).show();
+                MapsActivity.drawGeofence("red",id);
                 break;
 
             default:
                 Log.i(TAG,"ERROR OCCURRED");
-                MapsActivity.drawGeofence("red");
+                MapsActivity.drawGeofence("red","Library");
+                MapsActivity.drawGeofence("red","Old mess");
 
             //TODO: default red ,enter yellow , dwell green ,exit red
 
@@ -112,7 +107,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
     }
 
-    /**
+    /*
      * Posts a notification in the notification bar when a transition is detected.
      * If the user clicks the notification, control goes to the MainActivity.
      */

@@ -49,22 +49,20 @@ import java.util.ArrayList;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    public static CircleOptions circleOptions;
+    public static CircleOptions circleOptions ;
     private GeofencingClient geofencingClient;
     private static GoogleMap mMap;
 //    private static int color;
     private static final int REQUEST_CODE_BACKGROUND = 200;
     private static final int LOITERING_TIME = 60*1000;//Dwell interval = 1mins
     private static final int DURATION = 60 * 60 * 1000;//geofence existing interval = 1hour
-    private static final float RADIUS = 20.0f;//radius for geofence
-    private static final String GEOFENCE_REQ_ID = "My Geofence";
-    private static final LatLng manipalLib = new LatLng(26.8415517, 75.565365);
+    private static final float RADIUS = 40.0f;//radius for geofence
+    private static final ArrayList<String> GEOFENCE_REQ_ID = new ArrayList<String>(2);
+//    private static final LatLng manipalLib = new LatLng(26.8415517, 75.565365);
     private PendingIntent geofencePendingIntent;
     ArrayList<Geofence> geofenceArrayList = new ArrayList<>();
-    private static Marker geoFenceMarker;
-    private static ArrayList<Marker> getGeoFenceMarkers;
-
-    private static Circle geoFenceLimits;
+    private static ArrayList<Marker> geoFenceMarker = new ArrayList<>(2);
+    private static ArrayList<Circle> geoFenceLimits = new ArrayList<>(2);
     private static int red = 255;
     private static int blue = 180;
     private static int green = 180;
@@ -79,12 +77,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng user;
     private Marker UserMarker;
 
+    private ArrayList<LatLng> geofenceCentres = new ArrayList<>(2);
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         geofencingClient = LocationServices.getGeofencingClient(this); //client is a medium between maps and geofence object
-
+        GEOFENCE_REQ_ID.add("Library");
+        GEOFENCE_REQ_ID.add("Old mess");
+        geofenceCentres.add(new LatLng(26.8415517, 75.565365));
+        geofenceCentres.add(new LatLng(26.8429, 75.5653));
         isCalledFromOnCreate = true;
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -144,17 +148,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Initialize a geofence object with values
         private void createGeofenceObject () {
             Log.i("Info: ", "Inside Create object geofence method");
-            geofenceArrayList.add(
-                    new Geofence.Builder()
-                            .setRequestId(GEOFENCE_REQ_ID) // Geofence ID
-                            .setCircularRegion(manipalLib.latitude, manipalLib.longitude, RADIUS) // defining fence region
-                            .setExpirationDuration(DURATION) // expiring date
-                            // Transition types that it should look for
-                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
-                            .setLoiteringDelay(LOITERING_TIME)
-                            .build()
-            );
-        }
+            for(int i = 0; i< GEOFENCE_REQ_ID.size();i++) {
+                geofenceArrayList.add(
+                        new Geofence.Builder()
+                                .setRequestId(GEOFENCE_REQ_ID.get(i)) // Geofence ID
+                                .setCircularRegion(geofenceCentres.get(i).latitude, geofenceCentres.get(i).longitude, RADIUS) // defining fence region
+                                .setExpirationDuration(DURATION) // expiring date
+                                // Transition types that it should look for
+                                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                                .setLoiteringDelay(LOITERING_TIME)
+                                .build()
+                );
+            }
+    }
+
+
 
         //Specify geofences and initial triggers
         private GeofencingRequest getGeofencingRequest () {
@@ -163,7 +171,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return null;
             }
             GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL); //to reduce spams of continued stay in location
+            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER ); //to reduce spams of continued stay in location
             builder.addGeofences(geofenceArrayList);
             return builder.build();
         }
@@ -283,9 +291,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onSuccess(Void aVoid) {
                             // Geofences added
                             // ...
+                            Log.i("GEOFENCING REQUEST", getGeofencingRequest().toString());
+                            Log.i("GEOFENCE PENDING INTENT", getGeofencePendingIntent().toString());
                             Log.i(TAG, "Successful to ADD");
-                            markerForGeofence(manipalLib);
-                            drawGeofence("red");
+                            for (int i = 0; i < geofenceCentres.size(); i++)
+                            {
+                                markerForGeofence(geofenceCentres.get(i),i);
+                                drawGeofence("red", GEOFENCE_REQ_ID.get(i));
+                            }
                         }
                     })
                     .addOnFailureListener(this, new OnFailureListener() {
@@ -302,41 +315,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Draw Geofence circle on GoogleMap
 
-        public static void drawGeofence (String option) {
-            Log.d("Inside func", "drawGeofence()");
+        public static void drawGeofence (String option, String id ) {
+            Log.d("Inside func", "drawGeofence() of COLOR "+option+" ID:"+id);
 
 
 //                int color;
-                if (geoFenceLimits != null)
-                    geoFenceLimits.remove();
+//                if (geoFenceLimits.get(GEOFENCE_REQ_ID.indexOf(id)) != null)
+//                    geoFenceLimits.set(GEOFENCE_REQ_ID.indexOf(id), null);
 
-                switch (option){
-                    case "red":
+            switch (option) {
+                case "red":
 //                    color = R.color.red;
-                        red= 255;
-                        green= 51;
-                        blue= 51;
-                        break;
-                    case "yellow":
-                      //  color = R.color.yellow;
-                        red= 255;
-                        green= 209;
-                        blue= 26;
-                        break;
-                    case "green":
+                    red = 255;
+                    green = 51;
+                    blue = 51;
+                    break;
+                case "yellow":
+                    //  color = R.color.yellow;
+                    red = 255;
+                    green = 209;
+                    blue = 26;
+                    break;
+                case "green":
 //                    color = R.color.green;
-                        red= 0;
-                        green= 230;
-                        blue= 0;
-                        break;
-                    default:
+                    red = 0;
+                    green = 230;
+                    blue = 0;
+                    break;
+                default:
 //                    color = Color.RED;
-                        red= 255;
-                        green= 80;
-                        blue= 80;
-                }
+                    red = 255;
+                    green = 80;
+                    blue = 80;
+            }
 
-                circleOptions = new CircleOptions().center(geoFenceMarker.getPosition())
+                circleOptions =  new CircleOptions().center(geoFenceMarker.get(GEOFENCE_REQ_ID.indexOf(id)).getPosition())
 //                    .strokeColor(color)
 //                    .strokeColor(Color.alpha(40))
 //                    .fillColor(color)
@@ -345,15 +358,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .fillColor(Color.argb(80, red, green, blue))
                         .radius(RADIUS);
 
-                geoFenceLimits = mMap.addCircle(circleOptions);
+                geoFenceLimits.add( GEOFENCE_REQ_ID.indexOf(id), mMap.addCircle(circleOptions));
 
 
 
-
-            //                    .strokeColor(Color.argb(40, 0, 0, 0))
+                //                    .strokeColor(Color.argb(40, 0, 0, 0))
 //                    .fillColor(Color.argb(80, red, green, blue))
 
-        }
+            }
+
 //Method to be called outside of mainActivity to change the color of the field inside geofences
 //   public static void setColor(String option){
 //           switch (option){
@@ -396,7 +409,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Create a marker for the geofence creation
-        private void markerForGeofence (LatLng latLng){
+        private void markerForGeofence (LatLng latLng,int index){
             Log.i("Marker for Geo", "markerForGeofence(" + latLng + ")");
             // Define marker options
             MarkerOptions markerOptions = new MarkerOptions()
@@ -406,11 +419,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (mMap != null) {
                 // Remove last geoFenceMarker
 
-                    if (geoFenceMarker != null)
-                        geoFenceMarker.remove();
+//                    if (geoFenceMarker != null)
+//                        geoFenceMarker.remove();
 
-                    geoFenceMarker = mMap.addMarker(markerOptions);
-                    geoFenceMarker.setVisible(false);
+                    geoFenceMarker.add( index, mMap.addMarker(markerOptions));
+                    geoFenceMarker.get(index).setVisible(false);
 
             }
         }
@@ -426,7 +439,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Define marker options
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(latLng)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
                     .title("Your location");
             if (mMap != null) {
                 // Remove last geoFenceMarker
@@ -434,6 +447,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     UserMarker.remove();
 
                 UserMarker = mMap.addMarker(markerOptions);
+
             }
         }
 
