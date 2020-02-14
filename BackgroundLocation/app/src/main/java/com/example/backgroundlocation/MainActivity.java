@@ -13,11 +13,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -49,8 +53,9 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
 
     int locationCount = 0;
-    boolean isCalledFromOnCreate = false;
-    boolean isAlertVisible = false;
+
+    Snackbar locationSnackbar;
+
 
     boolean firstTimeOpen;
     boolean userGoneToSettings = false;
@@ -58,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO (DONE): implement onResume so that checkPermission will be checked when user come back from settings
     // TODO (DONE): issue - request button is enabled from starting, even when permissions are not given
+    // TODO (DONE): check isLocationEnabled when the RequestUpdates button is clicked, if not show Snackbar
+
     // TODO: check dynamically if the location is enabled and set to High Accuracy Mode - when locations are fetched and when request update button is pressed
     // TODO: implement and show locations on Log (in Background) and in TextView when the application is opened (onResume)
 
@@ -75,31 +82,28 @@ public class MainActivity extends AppCompatActivity {
         requestUpdatesButton.setEnabled(false);
         removeUpdatesButton.setEnabled(false);
 
+        setupLocationSnackbar();
+
         sharedPreferences = getSharedPreferences("com.example.backgroundlocation", MODE_PRIVATE);
         firstTimeOpen = sharedPreferences.getBoolean(KEY_FIRST_TIME_OPEN, true);  // (done) remember to make it false after checking and save
 
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        setupLocationRequest();
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!checkPermissions()) {
+            if (!checkPermissions())
                 requestPermissions();
-            }
-            else{
-                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                setupLocationRequest();
-//                checkAndGetLocationEnabled("ON_CREATE_1");
+            else
                 requestUpdatesButton.setEnabled(true);
-            }
         }
-        else{
-            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            setupLocationRequest();
-//            checkAndGetLocationEnabled("ON_CREATE_2");
+        else
             requestUpdatesButton.setEnabled(true);
-        }
-
-
 
     }
+
+
 
     @Override
     protected void onResume() {
@@ -108,17 +112,27 @@ public class MainActivity extends AppCompatActivity {
         if(userGoneToSettings){
             userGoneToSettings = false;
             // check if now the permissions are Granted, if not then again request
-            if(!checkPermissions())
-                requestPermissions();
+            if(checkPermissions()) {
+
+                if (isLocationEnabled()) {
+                    requestUpdatesButton.setEnabled(true);
+                    if(locationSnackbar.isShown())
+                        locationSnackbar.dismiss();
+                }
+                else {
+                    // TODO (DONE): can show, that the user has still not enabled the location
+                    locationSnackbar.show();
+                }
+
+            }
             else{
-                // TODO: then execute fusedLocation and LocationRequest setup, set requestButton enabled
-                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                setupLocationRequest();
-                requestUpdatesButton.setEnabled(true);
+                requestPermissions();
             }
 
         }
     }
+
+
 
     public void setupLocationRequest() {
         locationRequest = LocationRequest.create();
@@ -128,6 +142,8 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: set FastestInterval if required
     }
+
+
 
     private PendingIntent getPendingIntent() {
         Intent intent = new Intent(this, LocationUpdatesBroadcastReceiver.class);
@@ -145,12 +161,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     public void requestUpdates(View view){
         checkAndGetLocationEnabled("REQUEST_UPDATES BUTTON");
-        startLocationUpdates();
-        requestUpdatesButton.setEnabled(false);
-        removeUpdatesButton.setEnabled(true);
+        if(isLocationEnabled()) {
+            startLocationUpdates();
+            requestUpdatesButton.setEnabled(false);
+            removeUpdatesButton.setEnabled(true);
+        }
     }
+
 
 
     public void removeUpdates(View view){
@@ -159,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         requestUpdatesButton.setEnabled(true);
 //        fusedLocationProviderClient.removeLocationUpdates(getPendingIntent());
     }
+
 
 
     // TODO (DONE): add the code to check permission for ACCESS_BACKGROUND_LOCATION when needed
@@ -314,15 +335,20 @@ public class MainActivity extends AppCompatActivity {
             else
                 alertDialog = new AlertDialog.Builder(MainActivity.this);
 
-            isAlertVisible = true;
+//            isAlertVisible = true;
             Log.i("CHECK_AND_GET", "it is called by "+calledBy);
-            Log.i("ALERT", "ALERT IS SET TO VISIBLE");
+            String msgLocationRequired = "This app requires Location to Track your Attendance. Please enable High Accuracy mode.";
+            SpannableString msgLocationRequiredFormatted = new SpannableString(msgLocationRequired);
+            ForegroundColorSpan fcsRED = new ForegroundColorSpan(Color.RED);
+            msgLocationRequiredFormatted.setSpan(fcsRED, 67, 85, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+
             alertDialog
                     .setTitle("Enable Location!!")
-                    .setMessage("The application needs these permissions to work.\nRemember to set MODE: High Accuracy\nPlease enable or exit.")
-                    .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+                    .setMessage(msgLocationRequiredFormatted)
+                    .setPositiveButton("Enable", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            userGoneToSettings = true;
                             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         }
                     })
@@ -334,13 +360,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     })
                     .setCancelable(false)
-                    .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            isAlertVisible = false;
-                            Log.i("ALERT", "ALERT IS SET TO FALSE");
-                        }
-                    })
                     .show();
         }
     }
@@ -369,5 +388,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+    public void setupLocationSnackbar(){
+        View.OnClickListener mOnClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                userGoneToSettings = true;
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        };
+        locationSnackbar = Snackbar.make(findViewById(R.id.activity_main), R.string.location_not_enabled, Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.enable_location, mOnClickListener);
+    }
 
 }

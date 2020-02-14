@@ -12,6 +12,9 @@
 
     <string name="batched_location_updates">Batched location updates</string>
 
+    <string name="location_not_enabled">Location is not Enabled!</string>
+    <string name="enable_location">Enable Location</string>
+
     <plurals name="num_locations_reported">
         <item quantity="zero">No location reported</item>
         <item quantity="one">One location reported</item>
