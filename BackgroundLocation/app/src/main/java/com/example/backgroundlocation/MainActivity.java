@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
     Button removeUpdatesButton;
 
     final int LOCATION_REQUEST_CODE = 1000;
-    final int UPDATE_INTERVAL = 5 * 1000;
-    final int MAX_WAIT_TIME = 2 * UPDATE_INTERVAL;
+    final int UPDATE_INTERVAL = 60 * 1000;
+    final int MAX_WAIT_TIME = 3*UPDATE_INTERVAL;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
     // TODO (DONE): issue - request button is enabled from starting, even when permissions are not given
     // TODO (DONE): check isLocationEnabled when the RequestUpdates button is clicked, if not show Snackbar
 
-    // TODO: check dynamically if the location is enabled and set to High Accuracy Mode - when locations are fetched and when request update button is pressed
     // TODO: implement and show locations on Log (in Background) and in TextView when the application is opened (onResume)
+    // TODO: check dynamically if the location is enabled and set to High Accuracy Mode - when locations are fetched and when request update button is pressed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(UPDATE_INTERVAL);
         locationRequest.setMaxWaitTime(MAX_WAIT_TIME);
+        locationRequest.setFastestInterval(20*1000);
 
         // TODO: set FastestInterval if required
     }
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startLocationUpdates(){
 
-//        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
         Log.i(TAG, "REQUESTING LOCATION UPDATES");
         // TODO: remember to remove locationUpdates
     }
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "REMOVED LOCATION UPDATES");
         removeUpdatesButton.setEnabled(false);
         requestUpdatesButton.setEnabled(true);
-//        fusedLocationProviderClient.removeLocationUpdates(getPendingIntent());
+        fusedLocationProviderClient.removeLocationUpdates(getPendingIntent());
     }
 
 
