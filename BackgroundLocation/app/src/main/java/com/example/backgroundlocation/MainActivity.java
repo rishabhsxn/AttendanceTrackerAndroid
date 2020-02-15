@@ -64,8 +64,9 @@ public class MainActivity extends AppCompatActivity {
     // TODO (DONE): implement onResume so that checkPermission will be checked when user come back from settings
     // TODO (DONE): issue - request button is enabled from starting, even when permissions are not given
     // TODO (DONE): check isLocationEnabled when the RequestUpdates button is clicked, if not show Snackbar
+    // TODO (DONE): implement and show locations on Log (in Background) - only works properly in API 22, have to check for all other, specially 29 (Q)
 
-    // TODO: implement and show locations on Log (in Background) and in TextView when the application is opened (onResume)
+    // TODO: save locations is SharedPreferences so that locations are shown in TextView when the application is opened (onResume)
     // TODO: check dynamically if the location is enabled and set to High Accuracy Mode - when locations are fetched and when request update button is pressed
 
     @Override
@@ -139,13 +140,14 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(UPDATE_INTERVAL);
         locationRequest.setMaxWaitTime(MAX_WAIT_TIME);
-        locationRequest.setFastestInterval(20*1000);
+//        locationRequest.setFastestInterval(20*1000);
 
         // TODO: set FastestInterval if required
     }
 
 
 
+    // TODO: instead of using BroadcastReceiver, try service(sample in downloaded project)
     private PendingIntent getPendingIntent() {
         Intent intent = new Intent(this, LocationUpdatesBroadcastReceiver.class);
         intent.setAction(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES);
@@ -158,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
         Log.i(TAG, "REQUESTING LOCATION UPDATES");
-        // TODO: remember to remove locationUpdates
+        // TODO (DONE): remember to remove locationUpdates
     }
 
 
