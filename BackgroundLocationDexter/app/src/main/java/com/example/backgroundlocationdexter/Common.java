@@ -8,7 +8,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 public class Common {
-    private static final String KEY_REQUESTING_LOCATION_UPDATES = "LocationUpdateEnable";
+    public static final String KEY_REQUESTING_LOCATION_UPDATES = "LocationUpdateEnable";
 
     public static String getLocationText(Location location) {
 

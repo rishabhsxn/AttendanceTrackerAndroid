@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -34,7 +35,7 @@ import org.greenrobot.eventbus.EventBus;
 public class MyBackgroundService extends Service {
 
     private static final String CHANNEL_ID = "my_channel";
-    private static final long UPDATE_INTERVAL_IN_MIL = 10 * 1000;
+    private static final long UPDATE_INTERVAL_IN_MIL = 60 * 1000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MIL = UPDATE_INTERVAL_IN_MIL/2;
     private static final int NOTIFICATION_ID = 1223;
     private static final String EXTRA_STARTED_FROM_NOTIFICATION = "com.example.backgroundlocationdexter"+".started_from_notification";
@@ -105,7 +106,7 @@ public class MyBackgroundService extends Service {
         mChangingConfiguration = true;
     }
 
-    private void removeLocationUpdates() {
+    public void removeLocationUpdates() {
         try{
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
             Common.setRequestingLocationUpdates(this, false);
@@ -195,6 +196,16 @@ public class MyBackgroundService extends Service {
         return false;
     }
 
+    public void requestLocationUpdates() {
+        Common.setRequestingLocationUpdates(this, true);
+        startService(new Intent(getApplicationContext(), MyBackgroundService.class));
+        try{
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+        }
+        catch(SecurityException ex){
+            Log.e("VOLD", "LOST LOCATION PERMISSION. COULDN'T REQUEST IT " + ex);
+        }
+    }
 
 
     public class LocalBinder extends Binder{
