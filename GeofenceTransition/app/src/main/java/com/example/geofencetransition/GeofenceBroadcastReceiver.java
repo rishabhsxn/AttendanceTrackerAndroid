@@ -1,36 +1,50 @@
 package com.example.geofencetransition;
 
 
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 import android.graphics.Color;
+import android.os.CountDownTimer;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
+import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingEvent;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
 
+import static com.example.geofencetransition.MapsActivity.drawGeofence;
+import static com.example.geofencetransition.MapsActivity.geofenceArrayList;
 
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     public static final String TAG = GeofenceBroadcastReceiver.class.getSimpleName();
     static final String ACTION_RECEIVE_GEOFENCE = "com.example.geofencetransition.action.RECEIVE_GEOFENCE";
+    private GeofencingClient geofencingClient;
+    private PendingIntent geofencePendingIntent;
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         Log.i(TAG, "OnReceive Called");
 
 //        String action = intent.getAction();
 //        Log.i(TAG, action);
+        geofencingClient = LocationServices.getGeofencingClient(context);
 
 
 
@@ -58,15 +72,55 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         switch (geofenceTransition) {
             case Geofence.GEOFENCE_TRANSITION_ENTER:
                 Toast.makeText(context, "User entered Geofence ".concat(id), Toast.LENGTH_LONG).show();
-                MapsActivity.drawGeofence(Color.YELLOW, index);
+                drawGeofence(Color.YELLOW, index);
+
                 break;
             case Geofence.GEOFENCE_TRANSITION_DWELL:
                 Toast.makeText(context, "User inside Geofence ".concat(id), Toast.LENGTH_LONG).show();
-                MapsActivity.drawGeofence(Color.GREEN, index);
+                drawGeofence(Color.GREEN, index);
+
+                Toast.makeText(context,"REMOVED GEOFENCE", Toast.LENGTH_LONG).show();
+                geofencingClient.removeGeofences(MapsActivity.geofenceIDs);
+
+                // set a timer of 20sec, then add geofences
+                new CountDownTimer(60*1000, 5000){
+                    public void onTick(long milliSecondsUntilDone){
+//                        Toast.makeText(context, "no geofence",Toast.LENGTH_LONG).show();
+                    }
+
+                    public void onFinish(){
+
+                        Toast.makeText(context, "Timer Finished, adding geofence", Toast.LENGTH_LONG).show();
+
+                        geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent(context))
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.i("ADD_GEOFENCE", "SUCCESSFUL TO CREATE LOGICAL GEOFENCES");
+//
+                                        // Geofences created, now draw those on Map
+                                        Toast.makeText(context, "Geofence created successfully", Toast.LENGTH_LONG).show();
+                                        for (int i = 0; i < geofenceArrayList.size(); i++)
+                                        {
+                                            drawGeofence(Color.RED, i);
+                                        }
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        e.printStackTrace();
+                                        Log.i("ADD_GEOFENCE", "FAILED TO CREATE LOGICAL GEOFENCES");
+                                        Toast.makeText(context,"Failed to create geofence",Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                    }
+                }.start();
+
                 break;
             case Geofence.GEOFENCE_TRANSITION_EXIT:
                 Toast.makeText(context, "User Exited Geofence ".concat(id), Toast.LENGTH_LONG).show();
-                MapsActivity.drawGeofence(Color.RED, index);
+                drawGeofence(Color.RED, index);
                 break;
 
             default:
@@ -76,6 +130,30 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         }
 
 
+    }
+
+    private GeofencingRequest getGeofencingRequest () {
+        if (geofenceArrayList == null || geofenceArrayList.size() == 0) {
+//            Toast.makeText(getApplicationContext(), "ArrayList is Empty", Toast.LENGTH_LONG).show();
+            return null;
+        }
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_DWELL ); //to reduce spams of continued stay in location
+        builder.addGeofences(geofenceArrayList);
+        return builder.build();
+    }
+
+
+    private PendingIntent getGeofencePendingIntent (Context context) {
+        // Reuse the PendingIntent if we already have it.
+        if (geofencePendingIntent != null) {
+            return geofencePendingIntent;
+        }
+        Intent intent = new Intent(context, GeofenceBroadcastReceiver.class);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
+        // calling addGeofences() and removeGeofences().
+        geofencePendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return geofencePendingIntent;
     }
 
 

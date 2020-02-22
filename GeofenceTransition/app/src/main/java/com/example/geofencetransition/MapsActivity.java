@@ -49,7 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GeofencingClient geofencingClient;
     private static GoogleMap mMap;
     private static final int REQUEST_CODE_BACKGROUND = 200;
-    private static final int LOITERING_TIME = 60*1000;           //Dwell interval = 1mins
+    private static final int LOITERING_TIME = 15*1000;           //Dwell interval = 1mins
     private static final int DURATION = 60 * 60 * 1000;        //geofence existing interval = 1hour
     private static final float RADIUS = 40.0f;            //radius for geofence
     private PendingIntent geofencePendingIntent;
@@ -67,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng user;
     private Marker UserMarker;
 
-    ArrayList<Geofence> geofenceArrayList = new ArrayList<>();
+    static ArrayList<Geofence> geofenceArrayList = new ArrayList<>();
     static ArrayList<LatLng> geofenceCentres = new ArrayList<>();
     static final ArrayList<String> geofenceIDs = new ArrayList<>();
     static Circle[] geofenceCircles = new Circle[10];
@@ -148,7 +148,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return null;
             }
             GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER ); //to reduce spams of continued stay in location
+            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_DWELL ); //to reduce spams of continued stay in location
             builder.addGeofences(geofenceArrayList);
             return builder.build();
         }
@@ -164,7 +164,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // calling addGeofences() and removeGeofences().
             geofencePendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             return geofencePendingIntent;
-        }
+    }
 
 
     private void getGeofence () {
