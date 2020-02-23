@@ -44,7 +44,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
                 switch (action){
                     case ACTION_RECEIVED_LOCATION:
-                        Toast.makeText(context, "LOCATION IS RECEIVED", Toast.LENGTH_SHORT).show();
                         LocationResult locationResult = LocationResult.extractResult(intent);
 
                         if(locationResult != null){
@@ -55,6 +54,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         }
                         else
                             locationDetails = "No locations received";
+
+                        Toast.makeText(context, locationDetails, Toast.LENGTH_SHORT).show();
+                        Log.i("LOCATION_RECEIVER", locationDetails);
 
                         break;
 
