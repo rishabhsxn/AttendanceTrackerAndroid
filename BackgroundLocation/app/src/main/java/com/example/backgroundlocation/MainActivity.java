@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Button removeUpdatesButton;
 
     final int LOCATION_REQUEST_CODE = 1000;
-    final int UPDATE_INTERVAL = 60 * 1000;
+    final int UPDATE_INTERVAL = 20 * 1000;
     final int MAX_WAIT_TIME = 3*UPDATE_INTERVAL;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     boolean firstTimeOpen;
     boolean userGoneToSettings = false;
     final String KEY_FIRST_TIME_OPEN = "firstTimeOpen";
+    final String KEY_IS_REQUESTING_UPDATES = "isRequestingUpdates";
 
     // TODO (DONE): implement onResume so that checkPermission will be checked when user come back from settings
     // TODO (DONE): issue - request button is enabled from starting, even when permissions are not given
@@ -109,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        boolean isRequestingUpdates = sharedPreferences.getBoolean(KEY_IS_REQUESTING_UPDATES, false);
+        if(isRequestingUpdates) {
+            requestUpdatesButton.setEnabled(false);
+            removeUpdatesButton.setEnabled(true);
+        }
+
 
         if(userGoneToSettings){
             userGoneToSettings = false;
@@ -169,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
         checkAndGetLocationEnabled("REQUEST_UPDATES BUTTON");
         if(isLocationEnabled()) {
             startLocationUpdates();
+            sharedPreferences.edit().putBoolean(KEY_IS_REQUESTING_UPDATES, true).apply();
             requestUpdatesButton.setEnabled(false);
             removeUpdatesButton.setEnabled(true);
         }
@@ -181,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         removeUpdatesButton.setEnabled(false);
         requestUpdatesButton.setEnabled(true);
         fusedLocationProviderClient.removeLocationUpdates(getPendingIntent());
+        sharedPreferences.edit().putBoolean(KEY_IS_REQUESTING_UPDATES, false).apply();
     }
 
 
