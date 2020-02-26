@@ -25,11 +25,20 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,17 +46,33 @@ public class MainActivity extends AppCompatActivity {
 
     Button requestUpdatesButton;
     Button removeUpdatesButton;
+    Button addGeofences;
+    Button removeGeofences;
 
     final int LOCATION_REQUEST_CODE = 1000;
     final int UPDATE_INTERVAL = 20 * 1000;
-    final int MAX_WAIT_TIME = 3*UPDATE_INTERVAL;
+    final int MAX_WAIT_TIME = UPDATE_INTERVAL;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
 
+    private GeofencingClient geofencingClient;
+    private static final int LOITERING_TIME = 20*1000;           //Dwell interval = 1mins
+    private static final int DURATION = 60 * 60 * 1000;        //geofence existing interval = 1hour
+    private static final float RADIUS = 40.0f;            //radius for geofence
+    private PendingIntent geofencePendingIntent;
+
+    static ArrayList<Geofence> geofenceArrayList = new ArrayList<>();
+    static ArrayList<LatLng> geofenceCentres = new ArrayList<>();
+    static final ArrayList<String> geofenceIDs = new ArrayList<>();
+
+    private static final LatLng manipalLib = new LatLng(26.8415517, 75.565365);
+    private static final LatLng oldMesss = new LatLng(26.8429, 75.5653);
+    private static final LatLng voldRoom = new LatLng(26.8422,75.5611);
+
     SharedPreferences sharedPreferences;
 
-    int locationCount = 0;
+//    int locationCount = 0;
 
     Snackbar locationSnackbar;
 
@@ -55,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     boolean firstTimeOpen;
     boolean userGoneToSettings = false;
     final String KEY_FIRST_TIME_OPEN = "firstTimeOpen";
+    final String KEY_IS_REQUESTING_UPDATES = "isRequestingUpdates";
+    final String KEY_GEOFENCES_ADDED = "geofencesAdded";
 
 
     @Override
@@ -67,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
         removeUpdatesButton = (Button) findViewById(R.id.removeUpdatesButton);
         requestUpdatesButton.setEnabled(false);
         removeUpdatesButton.setEnabled(false);
+        addGeofences = (Button) findViewById(R.id.addGeofenceButton);
+        removeGeofences = (Button) findViewById(R.id.removeGeofenceButton);
+        addGeofences.setEnabled(false);
+        removeGeofences.setEnabled(false);
 
         setupLocationSnackbar();
 
@@ -76,14 +107,29 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setupLocationRequest();
 
+        geofencingClient = LocationServices.getGeofencingClient(this); //client is a medium between maps and geofence object
+        geofenceCentres.add(manipalLib);
+        geofenceIDs.add("Manipal Library");
+        geofenceCentres.add(oldMesss);
+        geofenceIDs.add("Old Mess");
+        geofenceCentres.add(voldRoom);
+        geofenceIDs.add("Vold's Room");
+
+        setUpGeofenceArray();
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!checkPermissions())
                 requestPermissions();
-            else
+            else {
                 requestUpdatesButton.setEnabled(true);
+                addGeofences.setEnabled(true);
+            }
         }
-        else
+        else {
             requestUpdatesButton.setEnabled(true);
+            addGeofences.setEnabled(true);
+        }
 
     }
 
@@ -92,6 +138,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        boolean isRequestingUpdates = sharedPreferences.getBoolean(KEY_IS_REQUESTING_UPDATES, false);
+        boolean geofencesAddedAlready = sharedPreferences.getBoolean(KEY_GEOFENCES_ADDED, false);
+        if(isRequestingUpdates) {
+            requestUpdatesButton.setEnabled(false);
+            removeUpdatesButton.setEnabled(true);
+        }
+
+        if(geofencesAddedAlready){
+            addGeofences.setEnabled(false);
+            removeGeofences.setEnabled(true);
+        }
+
         if(userGoneToSettings){
             userGoneToSettings = false;
             // check if now the permissions are Granted, if not then again request
@@ -99,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isLocationEnabled()) {
                     requestUpdatesButton.setEnabled(true);
+                    addGeofences.setEnabled(true);
                     if(locationSnackbar.isShown())
                         locationSnackbar.dismiss();
                 }
@@ -107,6 +166,24 @@ public class MainActivity extends AppCompatActivity {
             }
             else
                 requestPermissions();
+        }
+    }
+
+
+    private void setUpGeofenceArray () {
+        Log.i("Info: ", "INSIDE SETUP_GEOFENCE_ARRAY");
+
+        for(int i = 0; i< geofenceCentres.size() ;i++) {
+
+            geofenceArrayList.add(
+                    new Geofence.Builder()
+                            .setRequestId(geofenceIDs.get(i))
+                            .setCircularRegion(geofenceCentres.get(i).latitude, geofenceCentres.get(i).longitude, RADIUS) // defining fence region
+                            .setExpirationDuration(DURATION)
+                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                            .setLoiteringDelay(LOITERING_TIME)
+                            .build()
+            );
         }
     }
 
@@ -135,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private PendingIntent getPendingIntent() {
+    private PendingIntent getLocationPendingIntent() {
         Intent intent = new Intent(this, MyBroadcastReceiver.class);
         intent.setAction(MyBroadcastReceiver.ACTION_RECEIVED_LOCATION);
         return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -143,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void startLocationUpdates(){
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getPendingIntent());
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, getLocationPendingIntent());
         Log.i(TAG, "REQUESTING LOCATION UPDATES");
     }
 
@@ -152,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
         checkAndGetLocationEnabled();
         if(isLocationEnabled()) {
             startLocationUpdates();
+            sharedPreferences.edit().putBoolean(KEY_IS_REQUESTING_UPDATES, true).apply();
             requestUpdatesButton.setEnabled(false);
             removeUpdatesButton.setEnabled(true);
         }
@@ -162,7 +240,75 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "REMOVED LOCATION UPDATES");
         removeUpdatesButton.setEnabled(false);
         requestUpdatesButton.setEnabled(true);
-        fusedLocationProviderClient.removeLocationUpdates(getPendingIntent());
+        fusedLocationProviderClient.removeLocationUpdates(getLocationPendingIntent());
+        sharedPreferences.edit().putBoolean(KEY_IS_REQUESTING_UPDATES, false).apply();
+    }
+
+
+    public void addGeofences(View view){
+        Log.i(TAG, "GEOFENCES ADDITION INITIALIZED");
+        addGeofences.setEnabled(false);
+        removeGeofences.setEnabled(true);
+        addLogicalGeofences();
+        sharedPreferences.edit().putBoolean(KEY_GEOFENCES_ADDED, true).apply();
+    }
+
+
+    public void removeGeofences(View view){
+        Log.i(TAG, "GEOFENCES REMOVED");
+        addGeofences.setEnabled(true);
+        removeGeofences.setEnabled(false);
+        geofencingClient.removeGeofences(getGeofencePendingIntent());
+        sharedPreferences.edit().putBoolean(KEY_GEOFENCES_ADDED, false).apply();
+    }
+
+
+    public void addLogicalGeofences(){
+        if (geofencingClient == null || geofenceArrayList == null) {
+            Log.i("Info:", "COULDN'T GET GEOFENCE, GEOFENCE_CLIENT OR GEOFENCE_ARRAYLIST WAS NULL");
+            return;
+        }
+
+        geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i("ADD_GEOFENCE", "SUCCESSFUL TO CREATE LOGICAL GEOFENCES");
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Failed to add geofences
+                        e.printStackTrace();
+                        Log.i("ADD_GEOFENCE", "FAILED TO CREATE LOGICAL GEOFENCES");
+                    }
+                });
+    }
+
+
+    private GeofencingRequest getGeofencingRequest () {
+        if (geofenceArrayList == null || geofenceArrayList.size() == 0) {
+            Toast.makeText(getApplicationContext(), "ArrayList is Empty", Toast.LENGTH_LONG).show();
+            return null;
+        }
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_DWELL );
+        builder.addGeofences(geofenceArrayList);
+        return builder.build();
+    }
+
+
+    private PendingIntent getGeofencePendingIntent () {
+        // Reuse the PendingIntent if we already have it.
+        if (geofencePendingIntent != null) {
+            return geofencePendingIntent;
+        }
+        Intent intent = new Intent(this, MyBroadcastReceiver.class);
+        intent.setAction(MyBroadcastReceiver.ACTION_RECEIVED_GEOFENCE_EVENT);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
+        geofencePendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return geofencePendingIntent;
     }
 
 
@@ -293,6 +439,7 @@ public class MainActivity extends AppCompatActivity {
                 if(result) {
                     Log.i(TAG, "GOT THE PERMISSIONS");
                     requestUpdatesButton.setEnabled(true);
+                    addGeofences.setEnabled(true);
 //                requestLocationUpdates(null);
                 }
                 else {

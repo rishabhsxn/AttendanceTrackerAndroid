@@ -24,12 +24,12 @@ import com.google.android.gms.location.LocationResult;
 
 import java.util.List;
 
-
+// TODO: check the actions in the google project
 public class MyBroadcastReceiver extends BroadcastReceiver {
 
     final String TAG = MyBroadcastReceiver.class.getSimpleName();
-    final static String ACTION_RECEIVED_LOCATION = "com.example.backgroundlocationgeofence.action.ACTION_RECEIVED_LOCATION";
-    final static String ACTION_RECEIVED_GEOFENCE_EVENT = "com.example.backgroundlocationgeofence.action.ACTION_RECEIVED_GEOFENCE_EVENT";
+    final static String ACTION_RECEIVED_LOCATION = "com.example.backgroundlocationgeofence.action.RECEIVED_LOCATION";
+    final static String ACTION_RECEIVED_GEOFENCE_EVENT = "com.example.backgroundlocationgeofence.action.RECEIVED_GEOFENCE_EVENT";
 
     final static String CHANNEL_ID = "channel_01";
 
@@ -44,6 +44,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
                 switch (action){
                     case ACTION_RECEIVED_LOCATION:
+                        Log.i("VOLD", "ACTION MATCHED: "+ACTION_RECEIVED_LOCATION);
                         LocationResult locationResult = LocationResult.extractResult(intent);
 
                         if(locationResult != null){
@@ -62,6 +63,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
 
                     case ACTION_RECEIVED_GEOFENCE_EVENT:
+                        Log.i("VOLD", "ACTION MATCHED: "+ACTION_RECEIVED_GEOFENCE_EVENT);
+
                         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
                         if (geofencingEvent.hasError()) {
