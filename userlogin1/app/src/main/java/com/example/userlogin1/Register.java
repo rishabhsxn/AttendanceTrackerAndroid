@@ -35,8 +35,8 @@ ProgressBar progressBar;
         rEmail = findViewById(R.id.registerEmail);
         rPassword = findViewById(R.id.registerPassword);
         rSignUp = findViewById(R.id.SignUp);
-        rLogin = findViewById(R.id.login);
-        progressBar = findViewById(R.id.progressBar);
+        rLogin = findViewById(R.id.textLogin);
+        progressBar = findViewById(R.id.registerprogressBar);
 
         fAuth = FirebaseAuth.getInstance();
 
@@ -46,7 +46,9 @@ ProgressBar progressBar;
             finish();
         }
 
-        //when the user clicks register button need to validate the email, < 6 character password.
+
+
+        //when the user clicks register button need to validate the email, < 6 character password. and create user
         rSignUp.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -89,5 +91,14 @@ ProgressBar progressBar;
                 }); //user created if successful
             }//onclick End
         });//buttonOnClick listner ends
+
+        //if user wants to login
+        rLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),Login.class));
+            }
+        });
+
     }//OnCreate Ends
 }//Activity Ends
