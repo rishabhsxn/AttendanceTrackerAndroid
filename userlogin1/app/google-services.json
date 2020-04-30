@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "916241609091",
+    "firebase_url": "https://userlogin1-bc6dd.firebaseio.com",
+    "project_id": "userlogin1-bc6dd",
+    "storage_bucket": "userlogin1-bc6dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916241609091:android:0e17f311a95c5e28aac6b6",
+        "android_client_info": {
+          "package_name": "com.example.userlogin1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "916241609091-5kkdecb29fvv4596bhf3qgpsoa7p87b7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDymDDNNkjbuf8-9CigXpYS1VN4LoixB4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "916241609091-5kkdecb29fvv4596bhf3qgpsoa7p87b7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
