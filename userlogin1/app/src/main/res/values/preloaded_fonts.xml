@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/abeezee</item>
+        <item>@font/alike</item>
+        <item>@font/archivo_black</item>
+        <item>@font/aref_ruqaa_bold</item>
+        <item>@font/arvo_bold</item>
+        <item>@font/chivo_black</item>
+        <item>@font/corben_bold</item>
+        <item>@font/orienta</item>
+    </array>
+</resources>
