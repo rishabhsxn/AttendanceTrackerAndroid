@@ -7,12 +7,46 @@
     android:background="@drawable/wallpaper"
     tools:context=".Register">
 
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="197dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="198dp"
+        android:text="or"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SignUp" />
+
+    <Button
+        android:id="@+id/google_signUp"
+
+        android:layout_width="148dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="145dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="145dp"
+        android:background="@drawable/roundbutton"
+        android:backgroundTint="#FFFFFF"
+        android:drawableLeft="@drawable/google"
+        android:elevation="8dp"
+        android:text="  Sign Up"
+        android:textColor="#000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
     <EditText
         android:id="@+id/registerName"
         android:layout_width="330dp"
         android:layout_height="44dp"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="76dp"
         android:layout_marginEnd="73dp"
         android:background="@drawable/roundtxt"
         android:backgroundTint="#FFFFFF"
@@ -27,21 +61,23 @@
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <EditText
-        android:id="@+id/registerEmail"
+        android:id="@+id/registerPassword"
         android:layout_width="330dp"
         android:layout_height="44dp"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="196dp"
         android:layout_marginEnd="73dp"
         android:background="@drawable/roundtxt"
         android:backgroundTint="#FFFFFF"
         android:ems="10"
         android:foregroundTint="#FFFFFF"
-        android:hint="Email"
+        android:hint="Password"
         android:inputType="textPersonName"
+        android:password="true"
         android:textColor="#000000"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.515"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -50,7 +86,7 @@
         android:layout_width="330dp"
         android:layout_height="44dp"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="280dp"
+        android:layout_marginTop="256dp"
         android:layout_marginEnd="73dp"
         android:background="@drawable/roundtxt"
         android:backgroundTint="#FFFFFF"
@@ -65,24 +101,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+    <Button
+        android:id="@+id/SignUp"
+        android:layout_width="148dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="161dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="162dp"
+        android:background="@drawable/roundbutton"
+        android:fontFamily="sans-serif-medium"
+        android:text="Sign Up"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerPassword" />
+
     <EditText
-        android:id="@+id/registerPassword"
+        android:id="@+id/registerEmail"
         android:layout_width="330dp"
         android:layout_height="44dp"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="220dp"
+        android:layout_marginTop="136dp"
         android:layout_marginEnd="73dp"
         android:background="@drawable/roundtxt"
         android:backgroundTint="#FFFFFF"
         android:ems="10"
         android:foregroundTint="#FFFFFF"
-        android:hint="Password"
+        android:hint="Email"
         android:inputType="textPersonName"
-        android:password="true"
         android:textColor="#000000"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.515"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -137,23 +188,6 @@
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-    <Button
-        android:id="@+id/SignUp"
-        android:layout_width="148dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="161dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="162dp"
-        android:background="@drawable/roundbutton"
-        android:backgroundTint="#F64461"
-        android:fontFamily="sans-serif-medium"
-        android:text="Sign Up"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerPassword" />
 
     <TextView
         android:id="@+id/textView3"

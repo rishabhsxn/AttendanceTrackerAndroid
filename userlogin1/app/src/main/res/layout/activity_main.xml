@@ -6,6 +6,39 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/verifyEmail"
+        android:layout_width="80dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="47dp"
+        android:layout_marginEnd="109dp"
+        android:background="@drawable/roundbutton"
+        android:fontFamily="sans-serif-medium"
+        android:text="Verify"
+        android:textColor="#D7FFFDFE"
+        android:textSize="15sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/emailVerifiedText"
+        app:layout_constraintTop_toBottomOf="@+id/mainLogout" />
+
+    <TextView
+        android:id="@+id/emailVerifiedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/chivo_black"
+        android:text="Email Not Verified!"
+        android:textColor="#E91E63"
+        android:textSize="16sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toStartOf="@+id/verifyEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainLogout" />
+
     <Button
         android:id="@+id/mainLogout"
         android:layout_width="wrap_content"
