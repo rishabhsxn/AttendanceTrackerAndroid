@@ -15,20 +15,20 @@
       },
       "oauth_client": [
         {
-          "client_id": 
+          "client_id": ENTER_CLIENT_ID,
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": 
+          "current_key": ENTER_YOUR_KEY_HERE
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": 
+              "client_id": ENTER_CLIENT_ID,
               "client_type": 3
             }
           ]
